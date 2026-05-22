@@ -1,0 +1,7 @@
+name: hermes-web
+version: "1.2.0"
+description: Hermes Web request snapshot recorder for the dashboard plugin.
+hooks:
+  - pre_api_request
+provides_hooks:
+  - pre_api_request

@@ -1,0 +1,14 @@
+{
+  "name": "hermes-web",
+  "label": "Hermes Web",
+  "description": "Inspect Hermes runtime usage, skills, request bodies, and group conversations in one workspace.",
+  "icon": "Eye",
+  "version": "1.1.0",
+  "tab": {
+    "path": "/hermes-web",
+    "position": "after:sessions"
+  },
+  "entry": "dist/index.js",
+  "css": "dist/hermes-web.css",
+  "api": "plugin_api.py"
+}
