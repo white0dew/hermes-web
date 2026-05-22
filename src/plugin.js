@@ -130,6 +130,8 @@
       skillModeLatest: "Recently used",
       skillModeLeast: "Least used",
       skillModeUnused: "Unused",
+      profileFilter: "Profile",
+      profileAll: "All profiles",
       inspectDesc: "Inspect the exact request body Hermes sent upstream.",
       groupchatTitle: "Group chat",
       groupchatDesc: "Rooms, agents, and message flow in one place.",
@@ -286,6 +288,8 @@
       skillModeLatest: "最近使用",
       skillModeLeast: "最少使用",
       skillModeUnused: "未使用",
+      profileFilter: "Profile",
+      profileAll: "全部 Profile",
       inspectDesc: "查看 Hermes 实际发往上游的请求体，定位 system prompt、prefill、memory 注入和工具 schema。",
       groupchatTitle: "群聊",
       groupchatDesc: "把房间、成员和消息流放到同一个工作台里。",
@@ -367,6 +371,8 @@
     skillModeLatest: "最近使用",
     skillModeLeast: "最少使用",
     skillModeUnused: "未使用",
+    profileFilter: "Profile",
+    profileAll: "全部 Profile",
     inspectDesc: "查看 Hermes 實際送往上游的請求體，定位 system prompt、prefill、memory 注入和工具 schema。",
     groupchatTitle: "群聊",
     groupchatDesc: "把房間、成員和訊息流放到同一個工作台裡。",
@@ -700,6 +706,29 @@
           option.label,
         );
       }),
+    );
+  }
+
+  function profileSelect(options, active, onChange, t) {
+    return h(
+      "label",
+      { className: "dbg-profile-filter" },
+      h("span", { className: "dbg-field-label" }, t("profileFilter")),
+      h(
+        "select",
+        {
+          className: "dbg-select",
+          value: active,
+          onChange: function (event) { onChange(event.target.value); },
+        },
+        options.map(function (option) {
+          return h(
+            "option",
+            { key: option.id, value: option.id },
+            option.id === "all" ? t("profileAll") : option.label || option.id,
+          );
+        }),
+      ),
     );
   }
 
@@ -1193,6 +1222,7 @@
     const locale = i18n.locale;
     const [days, setDays] = useState(7);
     const [rankMode, setRankMode] = useState("top");
+    const [profile, setProfile] = useState("all");
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -1200,7 +1230,10 @@
     useEffect(function () {
       setLoading(true);
       setError("");
-      api("/skills?days=" + encodeURIComponent(String(days)))
+      api(
+        "/skills?days=" + encodeURIComponent(String(days)) +
+        "&profile=" + encodeURIComponent(String(profile))
+      )
         .then(function (data) {
           setStats(data);
         })
@@ -1211,9 +1244,10 @@
         .finally(function () {
           setLoading(false);
         });
-    }, [days]);
+    }, [days, profile]);
 
     const summary = stats && stats.summary ? stats.summary : null;
+    const profiles = stats && Array.isArray(stats.profiles) ? stats.profiles : [];
     const byDay = stats && Array.isArray(stats.by_day) ? stats.by_day : [];
     const topSkills = stats && Array.isArray(stats.top_skills) ? stats.top_skills : [];
     const unusedSkills = stats && Array.isArray(stats.unused_skills) ? stats.unused_skills : [];
@@ -1251,7 +1285,10 @@
         kicker: t("overview"),
         header: t("skillSummary"),
         subheader: t("skillSummaryDesc"),
-        actions: rangeSwitch(days, setDays),
+        actions: h("div", { className: "dbg-pill-row" },
+          rangeSwitch(days, setDays),
+          profileSelect([{ id: "all", label: "all" }].concat(profiles), profile, setProfile, t),
+        ),
         children: h(
           "div",
           { className: "dbg-stack" },

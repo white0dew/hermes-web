@@ -3,6 +3,28 @@
 Dashboard plugin for inspecting the outbound LLM request Hermes sends on each
 API call, with emphasis on request snapshots and usage totals.
 
+Hermes Web turns the raw internals of a Hermes runtime into a focused
+operations workspace:
+
+- usage pressure and cache efficiency
+- skill activity, now filterable by profile
+- exact upstream request bodies and token estimates
+- group chat rooms, agents, and message flow
+
+## Screenshots
+
+### Skills by profile
+
+![Hermes Web skills dashboard](./docs/skills-dashboard.png)
+
+### Exact request bodies
+
+![Hermes Web request bodies](./docs/request-bodies.png)
+
+### Group chat workbench
+
+![Hermes Web group chat workbench](./docs/groupchat-workbench.png)
+
 ## Why this exists
 
 The existing on-disk session snapshots under `~/.hermes/sessions/` are useful
@@ -30,6 +52,7 @@ the provider call is made, while also surfacing usage metrics from `state.db`.
 5. The dashboard UI renders:
    - usage totals and cache metrics
    - by-model/provider and by-day usage breakdowns
+   - profile-aware skill analytics across `default` and `profiles/*`
    - prompt envelope (`system`, `instructions`, etc.)
    - messages
    - raw request JSON
@@ -45,6 +68,7 @@ the provider call is made, while also surfacing usage metrics from `state.db`.
 - [plugins/hermes-web/dashboard/plugin_api.py](./dashboard/plugin_api.py)
   - direct SQLite reads from `state.db`
   - `GET /api/plugins/hermes-web/usage?days=7`
+  - `GET /api/plugins/hermes-web/profiles`
   - `GET /api/plugins/hermes-web/skills?days=7`
   - `GET /api/plugins/hermes-web/sessions`
   - `GET /api/plugins/hermes-web/sessions/{session_id}/requests`
@@ -54,7 +78,7 @@ the provider call is made, while also surfacing usage metrics from `state.db`.
   - plain IIFE dashboard UI
   - internal `Usage`, `Skills`, and `Requests` tabs
   - `Usage` tab with `1d / 7d / 30d` range selector
-  - `Skills` tab with `1d / 7d / 30d` range selector
+  - `Skills` tab with `1d / 7d / 30d` range selector and profile filter
   - `Requests` tab with session pagination and request drill-down
 
 ## What gets recorded
@@ -116,6 +140,10 @@ Requests within a session are currently loaded up to 200 rows without paging.
 
 `GET /api/plugins/hermes-web/skills?days=7` returns:
 
+- `profile`
+  - current profile filter, for example `all`, `default`, `writer`
+- `profiles`
+  - discovered profile list from `~/.hermes/state.db` and `~/.hermes/profiles/*/state.db`
 - `summary`
   - `total_skill_loads`
   - `total_skill_edits`
@@ -127,6 +155,7 @@ Requests within a session are currently loaded up to 200 rows without paging.
 - `top_skills`
   - grouped by skill name
   - includes `view_count`, `manage_count`, `total_count`, `percentage`, `last_used_at`
+  - each skill also carries per-profile breakdowns when multiple profile DBs are included
 
 ## Development notes
 

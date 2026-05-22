@@ -37,6 +37,37 @@ def _db_path() -> Path:
     return _hermes_home() / "state.db"
 
 
+def _profile_db_map() -> dict[str, Path]:
+    mapping: dict[str, Path] = {}
+    default_db = _db_path()
+    if default_db.exists():
+        mapping["default"] = default_db
+    profiles_root = _hermes_home() / "profiles"
+    if profiles_root.exists():
+        for child in sorted(profiles_root.iterdir(), key=lambda item: item.name.lower()):
+            if not child.is_dir():
+                continue
+            db_path = child / "state.db"
+            if db_path.exists():
+                mapping[child.name] = db_path
+    return mapping
+
+
+def _normalize_profile_filter(value: Optional[str]) -> str:
+    text = str(value or "all").strip().lower()
+    return text or "all"
+
+
+def _resolve_skill_profile_dbs(profile_filter: Optional[str]) -> dict[str, Path]:
+    profile_map = _profile_db_map()
+    normalized = _normalize_profile_filter(profile_filter)
+    if normalized == "all":
+        return profile_map
+    if normalized in profile_map:
+        return {normalized: profile_map[normalized]}
+    raise HTTPException(status_code=404, detail=f"Unknown profile: {profile_filter}")
+
+
 @contextmanager
 def _connect() -> Iterator[sqlite3.Connection]:
     db_path = _db_path()
@@ -67,6 +98,24 @@ def _fetch_one(query: str, params: Iterable[Any] = ()) -> Optional[dict[str, Any
     with _connect() as conn:
         row = conn.execute(query, tuple(params)).fetchone()
     return dict(row) if row else None
+
+
+def _fetch_all_from_db(db_path: Path, query: str, params: Iterable[Any] = ()) -> list[dict[str, Any]]:
+    if not db_path.exists():
+        return []
+    conn = sqlite3.connect(
+        f"file:{db_path}?mode=ro",
+        uri=True,
+        timeout=2.0,
+    )
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(query, tuple(params)).fetchall()
+        return [dict(row) for row in rows]
+    except sqlite3.DatabaseError as exc:
+        raise HTTPException(status_code=500, detail=f"SQLite query failed: {exc}") from exc
+    finally:
+        conn.close()
 
 
 def _parse_json_field(value: Any) -> Any:
@@ -549,7 +598,15 @@ def _list_known_skills() -> list[str]:
     return sorted(discovered.values(), key=lambda item: item.lower())
 
 
-def _skill_usage_totals(days: int) -> dict[str, Any]:
+def _list_skill_profiles() -> list[dict[str, str]]:
+    profile_map = _profile_db_map()
+    return [
+        {"id": profile_name, "label": profile_name, "db_path": str(db_path)}
+        for profile_name, db_path in profile_map.items()
+    ]
+
+
+def _skill_usage_totals(days: int, profile_filter: Optional[str] = None) -> dict[str, Any]:
     cutoff_ts, start_day, end_day = _skill_usage_cutoff(days)
     tool_predicate = """
         m.role = 'tool'
@@ -561,8 +618,7 @@ def _skill_usage_totals(days: int) -> dict[str, Any]:
         )
     """
 
-    recent_rows = _fetch_all(
-        f"""
+    recent_sql = f"""
         SELECT
             m.tool_name,
             m.tool_call_id,
@@ -582,12 +638,9 @@ def _skill_usage_totals(days: int) -> dict[str, Any]:
         JOIN messages AS m ON m.session_id = s.id
         WHERE s.started_at > ?
           AND {tool_predicate}
-        """,
-        (cutoff_ts,),
-    )
+        """
 
-    late_rows = _fetch_all(
-        f"""
+    late_sql = f"""
         SELECT
             m.tool_name,
             m.tool_call_id,
@@ -608,61 +661,86 @@ def _skill_usage_totals(days: int) -> dict[str, Any]:
         WHERE s.started_at <= ?
           AND COALESCE(m.timestamp, s.started_at) > ?
           AND {tool_predicate}
-        """,
-        (cutoff_ts, cutoff_ts),
-    )
+        """
 
     skill_map: dict[str, dict[str, Any]] = {}
     day_map: dict[str, dict[str, Any]] = {}
     day_skill_map: dict[str, dict[str, dict[str, int | str]]] = {}
+    selected_profiles = _resolve_skill_profile_dbs(profile_filter)
+    profiles_summary = [
+        {"id": profile_name, "label": profile_name}
+        for profile_name in selected_profiles.keys()
+    ]
 
-    for row in [*recent_rows, *late_rows]:
-        event = _map_skill_usage_event(row)
-        if not event:
-            continue
+    for profile_name, db_path in selected_profiles.items():
+        recent_rows = _fetch_all_from_db(db_path, recent_sql, (cutoff_ts,))
+        late_rows = _fetch_all_from_db(db_path, late_sql, (cutoff_ts, cutoff_ts))
+        for row in [*recent_rows, *late_rows]:
+            event = _map_skill_usage_event(row)
+            if not event:
+                continue
 
-        skill_name = str(event["skill"])
-        action = str(event["action"])
-        timestamp = event.get("timestamp")
+            skill_name = str(event["skill"])
+            action = str(event["action"])
+            timestamp = event.get("timestamp")
 
-        entry = skill_map.get(skill_name)
-        if entry is None:
-            entry = {
-                "skill": skill_name,
-                "view_count": 0,
-                "manage_count": 0,
-                "last_used_at": None,
-            }
-            skill_map[skill_name] = entry
-        if action == "view":
-            entry["view_count"] += 1
-        else:
-            entry["manage_count"] += 1
-        if isinstance(timestamp, int) and (entry["last_used_at"] is None or timestamp > entry["last_used_at"]):
-            entry["last_used_at"] = timestamp
+            entry = skill_map.get(skill_name)
+            if entry is None:
+                entry = {
+                    "skill": skill_name,
+                    "view_count": 0,
+                    "manage_count": 0,
+                    "last_used_at": None,
+                    "profiles": {},
+                }
+                skill_map[skill_name] = entry
+            if action == "view":
+                entry["view_count"] += 1
+            else:
+                entry["manage_count"] += 1
+            if isinstance(timestamp, int) and (entry["last_used_at"] is None or timestamp > entry["last_used_at"]):
+                entry["last_used_at"] = timestamp
 
-        day_key = _format_local_day(timestamp)
-        if not day_key:
-            continue
+            profile_entry = entry["profiles"].get(profile_name)
+            if profile_entry is None:
+                profile_entry = {"profile": profile_name, "view_count": 0, "manage_count": 0}
+                entry["profiles"][profile_name] = profile_entry
+            if action == "view":
+                profile_entry["view_count"] += 1
+            else:
+                profile_entry["manage_count"] += 1
 
-        day_entry = day_map.get(day_key)
-        if day_entry is None:
-            day_entry = {"date": day_key, "view_count": 0, "manage_count": 0}
-            day_map[day_key] = day_entry
-        if action == "view":
-            day_entry["view_count"] += 1
-        else:
-            day_entry["manage_count"] += 1
+            day_key = _format_local_day(timestamp)
+            if not day_key:
+                continue
 
-        skill_entries = day_skill_map.setdefault(day_key, {})
-        skill_entry = skill_entries.get(skill_name)
-        if skill_entry is None:
-            skill_entry = {"skill": skill_name, "view_count": 0, "manage_count": 0}
-            skill_entries[skill_name] = skill_entry
-        if action == "view":
-            skill_entry["view_count"] += 1
-        else:
-            skill_entry["manage_count"] += 1
+            day_entry = day_map.get(day_key)
+            if day_entry is None:
+                day_entry = {"date": day_key, "view_count": 0, "manage_count": 0}
+                day_map[day_key] = day_entry
+            if action == "view":
+                day_entry["view_count"] += 1
+            else:
+                day_entry["manage_count"] += 1
+
+            skill_entries = day_skill_map.setdefault(day_key, {})
+            skill_entry = skill_entries.get(skill_name)
+            if skill_entry is None:
+                skill_entry = {"skill": skill_name, "view_count": 0, "manage_count": 0, "profiles": {}}
+                skill_entries[skill_name] = skill_entry
+            if action == "view":
+                skill_entry["view_count"] += 1
+            else:
+                skill_entry["manage_count"] += 1
+
+            day_profile_entry = skill_entry["profiles"].get(profile_name)
+            if day_profile_entry is None:
+                day_profile_entry = {"profile": profile_name, "view_count": 0, "manage_count": 0}
+                skill_entry["profiles"][profile_name] = day_profile_entry
+            if action == "view":
+                day_profile_entry["view_count"] += 1
+            else:
+                day_profile_entry["manage_count"] += 1
 
     total_loads = sum(int(skill["view_count"]) for skill in skill_map.values())
     total_edits = sum(int(skill["manage_count"]) for skill in skill_map.values())
@@ -693,6 +771,21 @@ def _skill_usage_totals(days: int) -> dict[str, Any]:
                         "view_count": int(skill["view_count"]),
                         "manage_count": int(skill["manage_count"]),
                         "total_count": int(skill["view_count"]) + int(skill["manage_count"]),
+                        "profiles": [
+                            {
+                                "profile": str(profile_row["profile"]),
+                                "view_count": int(profile_row["view_count"]),
+                                "manage_count": int(profile_row["manage_count"]),
+                                "total_count": int(profile_row["view_count"]) + int(profile_row["manage_count"]),
+                            }
+                            for profile_row in sorted(
+                                skill.get("profiles", {}).values(),
+                                key=lambda item: (
+                                    -(int(item["view_count"]) + int(item["manage_count"])),
+                                    str(item["profile"]).lower(),
+                                ),
+                            )
+                        ],
                     }
                     for skill in skills
                 ],
@@ -712,6 +805,21 @@ def _skill_usage_totals(days: int) -> dict[str, Any]:
                 else 0.0
             ),
             "last_used_at": skill["last_used_at"],
+            "profiles": [
+                {
+                    "profile": str(profile_row["profile"]),
+                    "view_count": int(profile_row["view_count"]),
+                    "manage_count": int(profile_row["manage_count"]),
+                    "total_count": int(profile_row["view_count"]) + int(profile_row["manage_count"]),
+                }
+                for profile_row in sorted(
+                    skill.get("profiles", {}).values(),
+                    key=lambda item: (
+                        -(int(item["view_count"]) + int(item["manage_count"])),
+                        str(item["profile"]).lower(),
+                    ),
+                )
+            ],
         }
         for skill in skill_map.values()
     ]
@@ -742,6 +850,9 @@ def _skill_usage_totals(days: int) -> dict[str, Any]:
 
     return {
         "days": days,
+        "profile": _normalize_profile_filter(profile_filter),
+        "profiles": _list_skill_profiles(),
+        "selected_profiles": profiles_summary,
         "date_from": start_day,
         "date_to": end_day,
         "summary": {
@@ -803,6 +914,19 @@ def get_usage(days: int = Query(7, ge=1, le=365)):
     return _usage_totals(days)
 
 
+@router.get("/profiles")
+def list_profiles():
+    return {
+        "profiles": [{"id": "all", "label": "all"}] + [
+            {"id": row["id"], "label": row["label"]}
+            for row in _list_skill_profiles()
+        ]
+    }
+
+
 @router.get("/skills")
-def get_skills(days: int = Query(7, ge=1, le=365)):
-    return _skill_usage_totals(days)
+def get_skills(
+    days: int = Query(7, ge=1, le=365),
+    profile: str = Query("all", description="Profile id or 'all'"),
+):
+    return _skill_usage_totals(days, profile_filter=profile)

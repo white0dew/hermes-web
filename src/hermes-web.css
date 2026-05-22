@@ -440,6 +440,10 @@ body.dbg-dashboard-sidebar-hidden .content-container {
   color: var(--dbg-muted);
 }
 
+.dbg-profile-filter {
+  min-width: 11rem;
+}
+
 .dbg-select,
 .dbg-textarea {
   width: 100%;
