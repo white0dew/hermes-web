@@ -77,8 +77,8 @@
       outputTokens: "Output tokens",
       reasoning: "reasoning",
       apiCalls: "API calls",
-      promptSideTotalLabel: "Prompt-side total",
       cacheReadLabel: "Cache read",
+      cacheWriteLabel: "Cache write",
       hitRate: "hit rate",
       readVsInput: "Read vs input",
       cacheReadOverInput: "cache_read_tokens / input_tokens",
@@ -89,34 +89,29 @@
       systemPrompt: "System prompt",
       systemMessage: "System message",
       trendLegendOther: "other",
-      usageSummary: "Key pressure",
-      usageSummaryDesc: "Keep the spend shape visible without flooding the page.",
+      usageSummary: "Usage overview",
+      usageSummaryDesc: "Lead with concrete token metrics, then drill into cache and model slices.",
       usageToday: "Today sessions",
-      usagePrompt: "Prompt load",
+      usageInput: "Input tokens",
       usageOutput: "Output tokens",
+      usageReasoning: "Reasoning tokens",
       usageCalls: "API calls",
-      usageTrend: "Daily pressure",
-      usageTrendDesc: "Watch the daily curve first.",
-      usageCache: "Cache profile",
-      usageCacheDesc: "See whether cache is really offsetting prompt load.",
+      usageTrend: "Daily usage",
+      usageTrendDesc: "Track daily sessions, input, output, and API calls.",
+      usageCache: "Cache usage",
+      usageCacheDesc: "Check whether cache reads are meaningfully reducing fresh input load.",
       usageLead: "Main driver",
-      usageLeadDesc: "Largest model/provider slice in the selected range.",
+      usageLeadDesc: "Model/provider slice with the highest input token usage in the selected range.",
       usagePeak: "Peak day",
-      usagePeakDesc: "Highest prompt-side load in the selected range.",
+      usagePeakDesc: "Day with the highest input token usage in the selected range.",
       usageBreakdown: "Model / provider ranking",
-      usageBreakdownDesc: "Sorted by prompt load and cache leverage.",
+      usageBreakdownDesc: "Sorted by input tokens, with output and cache context.",
       skillSummary: "Skill usage",
       skillSummaryDesc: "Focus on what gets used most, what just appeared, and what barely gets touched.",
       totalSkillActions: "Total actions",
       skillLoads: "View count",
       skillEdits: "Manage count",
       distinctSkills: "Active skills",
-      skillLead: "Most used today",
-      skillLeadDesc: "The skill with the most calls today.",
-      skillShare: "Top 3 share",
-      skillShareDesc: "See whether traffic is concentrated in only a few skills.",
-      skillTrend: "Daily distribution",
-      skillTrendDesc: "How much was used each day, and which skills dominated.",
       topSkills: "Skill ranking",
       topSkillsDesc: "Sorted by total usage with share and recent activity.",
       latestSkills: "Recently used",
@@ -234,8 +229,8 @@
       outputTokens: "输出 tokens",
       reasoning: "推理",
       apiCalls: "API 调用",
-      promptSideTotalLabel: "提示侧总量",
       cacheReadLabel: "缓存读取",
+      cacheWriteLabel: "缓存写入",
       hitRate: "命中率",
       readVsInput: "读取/输入",
       cacheReadOverInput: "cache_read_tokens / input_tokens",
@@ -246,22 +241,23 @@
       systemPrompt: "System prompt",
       systemMessage: "System message",
       trendLegendOther: "其他",
-      usageSummary: "核心压力",
-      usageSummaryDesc: "先看关键指标，再决定往下钻哪里。",
+      usageSummary: "用量概览",
+      usageSummaryDesc: "先看具体 token 指标，再往下看缓存和模型排行。",
       usageToday: "今日会话",
-      usagePrompt: "提示侧负载",
+      usageInput: "输入 tokens",
       usageOutput: "输出 tokens",
+      usageReasoning: "推理 tokens",
       usageCalls: "API 调用",
-      usageTrend: "每日压力",
-      usageTrendDesc: "先看每天变化，再看明细排行。",
-      usageCache: "缓存画像",
-      usageCacheDesc: "判断缓存到底有没有帮你扛住 prompt 压力。",
+      usageTrend: "每日用量",
+      usageTrendDesc: "按天查看会话、输入、输出和 API 调用变化。",
+      usageCache: "缓存用量",
+      usageCacheDesc: "看缓存读取是否真实降低了新增输入负载。",
       usageLead: "主要来源",
-      usageLeadDesc: "当前范围内占比最大的 model/provider 组合。",
+      usageLeadDesc: "当前范围内输入 tokens 最高的 model/provider 组合。",
       usagePeak: "峰值日期",
-      usagePeakDesc: "当前范围内提示侧负载最高的一天。",
+      usagePeakDesc: "当前范围内输入 tokens 最高的一天。",
       usageBreakdown: "模型 / 提供方排行",
-      usageBreakdownDesc: "按提示侧负载排序，顺带看缓存效果。",
+      usageBreakdownDesc: "按输入 tokens 排序，同时补充输出与缓存信息。",
       skillSummary: "技能使用",
       skillSummaryDesc: "看哪些技能最常用，调用会不会扎堆，这几天有没有变化。",
       totalSkillActions: "总使用次数",
@@ -269,12 +265,6 @@
       skillEdits: "管理次数",
       distinctSkills: "活跃技能数",
       unusedSkillCount: "未使用技能",
-      skillLead: "今日最常用",
-      skillLeadDesc: "今天调用最多的技能。",
-      skillShare: "前三占比",
-      skillShareDesc: "看调用是不是集中在少数技能。",
-      skillTrend: "每日分布",
-      skillTrendDesc: "每天用了多少、主要用了哪些技能。",
       topSkills: "技能排行",
       topSkillsDesc: "按使用次数排序，并显示占比和最近使用时间。",
       latestSkills: "最近使用",
@@ -350,19 +340,22 @@
     loadingSkills: "正在讀取技能資料...",
     showingZero: "顯示 0 筆",
     rising: "較前一日",
-    usageSummaryDesc: "先看關鍵指標，再決定往下鑽哪裡。",
-    usageTrendDesc: "先看每天變化，再看明細排行。",
+    usageSummaryDesc: "先看具體 token 指標，再往下看快取和模型排行。",
+    usageInput: "輸入 tokens",
+    usageReasoning: "推理 tokens",
+    usageTrend: "每日用量",
+    usageTrendDesc: "按天查看會話、輸入、輸出和 API 呼叫變化。",
+    usageCache: "快取用量",
+    usageCacheDesc: "看快取讀取是否真的降低了新增輸入負載。",
+    usageLeadDesc: "目前範圍內輸入 tokens 最高的 model/provider 組合。",
+    usagePeakDesc: "目前範圍內輸入 tokens 最高的一天。",
+    usageBreakdownDesc: "按輸入 tokens 排序，同時補充輸出與快取資訊。",
     skillSummary: "技能使用",
     totalSkillActions: "總使用次數",
     skillLoads: "查看次數",
     skillEdits: "管理次數",
     distinctSkills: "活躍技能數",
     unusedSkillCount: "未使用技能",
-    skillLead: "今日最常用",
-    skillLeadDesc: "今天呼叫最多的技能。",
-    skillShare: "前三占比",
-    skillShareDesc: "看呼叫是不是集中在少數技能。",
-    skillTrend: "每日分佈",
     topSkills: "技能排行",
     latestSkills: "最近使用",
     leastUsedSkills: "最少使用",
@@ -395,8 +388,6 @@
     noMentionMatch: "沒有匹配的成員",
     movedNotice: "這個外掛已經併入 Hermes Web > 群聊。",
   });
-
-  const SKILL_COLORS = ["c1", "c2", "c3", "c4", "c5", "c6"];
 
   function normalizeLocale(locale) {
     const raw = String(locale || "").trim().toLowerCase().replace(/_/g, "-");
@@ -601,20 +592,6 @@
     return rows[rows.length - 2] || null;
   }
 
-  function topSkillsShare(rows) {
-    if (!Array.isArray(rows) || rows.length === 0) return 0;
-    const total = rows.reduce(function (sum, row) {
-      return sum + safeNumber(row.total_count);
-    }, 0);
-    if (!total) return 0;
-    const topThree = rows.slice().sort(function (a, b) {
-      return safeNumber(b.total_count) - safeNumber(a.total_count);
-    }).slice(0, 3).reduce(function (sum, row) {
-      return sum + safeNumber(row.total_count);
-    }, 0);
-    return (topThree / total) * 100;
-  }
-
   function sortSkills(rows, mode) {
     const list = Array.isArray(rows) ? rows.slice() : [];
     if (mode === "unused") {
@@ -746,7 +723,7 @@
 
   function usageRow(props) {
     const row = props.row;
-    const promptPct = props.maxPromptSide ? (safeNumber(row.prompt_side_total) / props.maxPromptSide) * 100 : 0;
+    const inputPct = props.maxInputTokens ? (safeNumber(row.input_tokens) / props.maxInputTokens) * 100 : 0;
     return h(
       "div",
       { className: "dbg-row dbg-usage-row" },
@@ -756,24 +733,24 @@
         h("div", { className: "dbg-row-copy" }, fmtCompact(row.sessions_started, props.locale), " ", props.t("sessions"), " · ", fmtCompact(row.api_calls, props.locale), " ", props.t("calls")),
       ),
       h("div", { className: "dbg-row-cluster" },
-        progressBar(promptPct),
+        progressBar(inputPct),
         h("div", { className: "dbg-row-copy" },
-          fmtCompact(row.prompt_side_total, props.locale), " ", props.t("promptSideTotalLabel"),
-          " · ", fmtPct(row.cache_hit_rate_pct, props.locale), " ", props.t("hitRate"),
-          " · ", fmtRatio(row.cache_read_vs_input_ratio, props.locale),
+          fmtCompact(row.input_tokens, props.locale), " ", props.t("inputTokens"),
+          " · ", fmtCompact(row.output_tokens, props.locale), " ", props.t("outputTokens"),
+          " · ", fmtCompact(row.cache_read_tokens, props.locale), " ", props.t("cacheReadLabel"),
         ),
       ),
       h("div", { className: "dbg-row-aside" },
-        h("div", { className: "dbg-token" }, fmtCompact(row.input_tokens, props.locale)),
-        h("div", null, props.t("inputTokens")),
+        h("div", { className: "dbg-token" }, fmtPct(row.cache_hit_rate_pct, props.locale)),
+        h("div", null, props.t("hitRate")),
       ),
     );
   }
 
   function usageDayRow(props) {
     const row = props.row;
-    const promptPct = props.maxPromptSide ? (safeNumber(row.prompt_side_total) / props.maxPromptSide) * 100 : 0;
-    const delta = props.previous ? fmtDelta(row.sessions_started, props.previous.sessions_started, props.locale) : null;
+    const inputPct = props.maxInputTokens ? (safeNumber(row.input_tokens) / props.maxInputTokens) * 100 : 0;
+    const delta = props.previous ? fmtDelta(row.input_tokens, props.previous.input_tokens, props.locale) : null;
     return h(
       "div",
       { className: "dbg-row dbg-day-row" },
@@ -782,76 +759,16 @@
         h("div", { className: "dbg-row-meta" }, fmtCompact(row.sessions_started, props.locale), " ", props.t("sessions")),
       ),
       h("div", { className: "dbg-row-cluster" },
-        progressBar(promptPct, "is-mint"),
+        progressBar(inputPct, "is-mint"),
         h("div", { className: "dbg-row-copy" },
-          fmtCompact(row.prompt_side_total, props.locale), " ", props.t("promptSideTotalLabel"),
-          " · ", fmtPct(row.cache_hit_rate_pct, props.locale), " ", props.t("hitRate"),
+          fmtCompact(row.input_tokens, props.locale), " ", props.t("inputTokens"),
+          " · ", fmtCompact(row.output_tokens, props.locale), " ", props.t("outputTokens"),
           " · ", fmtCompact(row.api_calls, props.locale), " ", props.t("apiCalls"),
         ),
       ),
       h("div", { className: "dbg-row-aside" },
         h("div", { className: "dbg-token" }, delta || "—"),
         h("div", null, props.t("rising")),
-      ),
-    );
-  }
-
-  function buildSkillSegments(skills, total, t, locale) {
-    const list = Array.isArray(skills) ? skills.slice(0, 5) : [];
-    const knownTotal = list.reduce(function (sum, skill) {
-      return sum + safeNumber(skill.total_count);
-    }, 0);
-    const segments = list.map(function (skill, index) {
-      return {
-        label: skill.skill,
-        total: safeNumber(skill.total_count),
-        pct: total ? (safeNumber(skill.total_count) / total) * 100 : 0,
-        className: SKILL_COLORS[index] || "c6",
-      };
-    });
-    if (total > knownTotal) {
-      segments.push({
-        label: t("trendLegendOther"),
-        total: total - knownTotal,
-        pct: total ? ((total - knownTotal) / total) * 100 : 0,
-        className: "c6",
-      });
-    }
-    return segments.map(function (segment) {
-      return h("div", {
-        key: segment.label,
-        className: "dbg-segment " + segment.className,
-        style: { width: Math.max(segment.pct, segment.total > 0 ? 1 : 0) + "%" },
-        title: segment.label + ": " + fmtInt(segment.total, locale),
-      });
-    });
-  }
-
-  function skillDayRow(props) {
-    const row = props.row;
-    const skills = Array.isArray(row.skills) ? row.skills : [];
-    const lead = skills[0] || null;
-    const delta = props.previous ? fmtDelta(row.total_count, props.previous.total_count, props.locale) : null;
-    return h(
-      "div",
-      { className: "dbg-row dbg-day-row" },
-      h("div", { className: "dbg-row-main" },
-        h("div", { className: "dbg-row-title" }, row.date),
-        h("div", { className: "dbg-row-meta" }, fmtCompact(row.total_count, props.locale), " ", props.t("calls")),
-      ),
-      h("div", { className: "dbg-row-cluster" },
-        h("div", { className: "dbg-segments", title: skills.map(function (skill) {
-          return skill.skill + ": " + fmtInt(skill.total_count, props.locale);
-        }).join("\n") }, buildSkillSegments(skills, safeNumber(row.total_count), props.t, props.locale)),
-        h("div", { className: "dbg-row-copy" },
-          fmtCompact(row.view_count, props.locale), " ", props.t("skillLoads"),
-          " · ", fmtCompact(row.manage_count, props.locale), " ", props.t("skillEdits"),
-          lead ? " · " + lead.skill : "",
-        ),
-      ),
-      h("div", { className: "dbg-row-aside" },
-        h("div", { className: "dbg-token" }, delta || "—"),
-        h("div", null, props.t("activity")),
       ),
     );
   }
@@ -1063,11 +980,11 @@
     const peak = peakUsageDay(byDay);
     const today = latestDay(byDay);
     const prev = previousDay(byDay);
-    const maxPromptSide = Math.max.apply(null, byDay.map(function (row) {
-      return safeNumber(row.prompt_side_total);
+    const maxInputTokens = Math.max.apply(null, byDay.map(function (row) {
+      return safeNumber(row.input_tokens);
     }).concat([0]));
-    const maxGroupedPromptSide = Math.max.apply(null, grouped.map(function (row) {
-      return safeNumber(row.prompt_side_total);
+    const maxGroupedInputTokens = Math.max.apply(null, grouped.map(function (row) {
+      return safeNumber(row.input_tokens);
     }).concat([0]));
 
     return h(
@@ -1090,15 +1007,15 @@
               tone: "dbg-metric-tone-accent",
             }),
             metricCard({
-              label: t("usagePrompt"),
-              value: loading ? "..." : fmtCompact(totals && totals.prompt_side_total, locale),
-              hint: totals ? fmtCompact(totals.input_tokens, locale) + " " + t("inputTokens") + " · " + fmtCompact(totals.cache_read_tokens, locale) + " " + t("cacheReadLabel") : "",
+              label: t("usageInput"),
+              value: loading ? "..." : fmtCompact(totals && totals.input_tokens, locale),
+              hint: totals ? fmtCompact(totals.cache_read_tokens, locale) + " " + t("cacheReadLabel") + " · " + fmtCompact(totals.cache_write_tokens, locale) + " " + t("cacheWriteLabel") : "",
               tone: "dbg-metric-tone-mint",
             }),
             metricCard({
               label: t("usageOutput"),
               value: loading ? "..." : fmtCompact(totals && totals.output_tokens, locale),
-              hint: totals ? fmtCompact(totals.reasoning_tokens, locale) + " " + t("reasoning") : "",
+              hint: totals ? fmtCompact(totals.reasoning_tokens, locale) + " " + t("usageReasoning") : "",
               tone: "dbg-metric-tone-blue",
             }),
             metricCard({
@@ -1126,7 +1043,7 @@
                       row: row,
                       locale: locale,
                       t: t,
-                      maxPromptSide: maxPromptSide,
+                      maxInputTokens: maxInputTokens,
                       previous: index > 0 ? byDay[index - 1] : null,
                     });
                   })),
@@ -1162,12 +1079,15 @@
                       h("div", { className: "dbg-row-meta" }, lead.provider || t("unknown")),
                     ),
                     h("div", { className: "dbg-row-cluster" },
-                      progressBar(maxGroupedPromptSide ? (safeNumber(lead.prompt_side_total) / maxGroupedPromptSide) * 100 : 0, "is-blue"),
-                      h("div", { className: "dbg-row-copy" }, fmtCompact(lead.prompt_side_total, locale), " ", t("promptSideTotalLabel")),
+                      progressBar(maxGroupedInputTokens ? (safeNumber(lead.input_tokens) / maxGroupedInputTokens) * 100 : 0, "is-blue"),
+                      h("div", { className: "dbg-row-copy" },
+                        fmtCompact(lead.input_tokens, locale), " ", t("inputTokens"),
+                        " · ", fmtCompact(lead.output_tokens, locale), " ", t("outputTokens"),
+                      ),
                     ),
                     h("div", { className: "dbg-row-aside" },
-                      h("div", { className: "dbg-token" }, fmtPct(lead.cache_hit_rate_pct, locale)),
-                      h("div", null, t("hitRate")),
+                      h("div", { className: "dbg-token" }, fmtCompact(lead.cache_read_tokens, locale)),
+                      h("div", null, t("cacheReadLabel")),
                     ),
                   )
                 : h("div", { className: "dbg-empty" }, t("noUsageRows")),
@@ -1183,7 +1103,10 @@
                     ),
                     h("div", { className: "dbg-row-cluster" },
                       progressBar(100, "is-mint"),
-                      h("div", { className: "dbg-row-copy" }, fmtCompact(peak.prompt_side_total, locale), " ", t("promptSideTotalLabel")),
+                      h("div", { className: "dbg-row-copy" },
+                        fmtCompact(peak.input_tokens, locale), " ", t("inputTokens"),
+                        " · ", fmtCompact(peak.output_tokens, locale), " ", t("outputTokens"),
+                      ),
                     ),
                     h("div", { className: "dbg-row-aside" },
                       h("div", { className: "dbg-token" }, fmtCompact(peak.api_calls, locale)),
@@ -1210,7 +1133,7 @@
                     row: row,
                     locale: locale,
                     t: t,
-                    maxPromptSide: maxGroupedPromptSide,
+                    maxInputTokens: maxGroupedInputTokens,
                   });
                 })),
       }),
@@ -1249,17 +1172,12 @@
 
     const summary = stats && stats.summary ? stats.summary : null;
     const profiles = stats && Array.isArray(stats.profiles) ? stats.profiles : [];
-    const byDay = stats && Array.isArray(stats.by_day) ? stats.by_day : [];
     const topSkills = stats && Array.isArray(stats.top_skills) ? stats.top_skills : [];
     const unusedSkills = stats && Array.isArray(stats.unused_skills) ? stats.unused_skills : [];
     const skillRows = rankMode === "unused" ? unusedSkills : topSkills;
     const rankedSkills = useMemo(function () {
       return sortSkills(skillRows, rankMode);
     }, [skillRows, rankMode]);
-    const today = latestDay(byDay);
-    const prev = previousDay(byDay);
-    const topToday = today && Array.isArray(today.skills) && today.skills.length > 0 ? today.skills[0] : null;
-    const topShare = topSkillsShare(topSkills);
     const maxSkillTotal = Math.max.apply(null, rankedSkills.map(function (row) {
       return safeNumber(row.total_count);
     }).concat([0]));
@@ -1304,13 +1222,13 @@
             metricCard({
               label: t("skillLoads"),
               value: loading ? "..." : fmtCompact(summary && summary.total_skill_loads, locale),
-              hint: today ? fmtCompact(today.view_count, locale) + " " + t("todayWord") : "",
+              hint: stats ? stats.date_from + " to " + stats.date_to : "",
               tone: "dbg-metric-tone-mint",
             }),
             metricCard({
               label: t("skillEdits"),
               value: loading ? "..." : fmtCompact(summary && summary.total_skill_edits, locale),
-              hint: today ? fmtCompact(today.manage_count, locale) + " " + t("todayWord") : "",
+              hint: stats ? stats.date_from + " to " + stats.date_to : "",
               tone: "dbg-metric-tone-pink",
             }),
             metricCard({
@@ -1322,78 +1240,12 @@
                   : fmtCompact(summary && summary.distinct_skills_used, locale),
               hint: rankMode === "unused"
                 ? fmtCompact(summary && summary.distinct_skills_known, locale) + " total"
-                : topToday ? topToday.skill : "",
+                : stats ? stats.date_from + " to " + stats.date_to : "",
               tone: "dbg-metric-tone-blue",
             }),
           ),
         ),
       }),
-      h("div", { className: "dbg-grid dbg-grid-two" },
-        panel({
-          kicker: t("activity"),
-          header: t("skillTrend"),
-          subheader: t("skillTrendDesc"),
-          children:
-            loading
-              ? h("div", { className: "dbg-empty" }, t("loadingSkills"))
-              : byDay.length === 0
-                ? h("div", { className: "dbg-empty" }, t("noSkillData"))
-                : h("div", { className: "dbg-list" }, byDay.map(function (row, index) {
-                    return h(skillDayRow, {
-                      key: row.date,
-                      row: row,
-                      locale: locale,
-                      t: t,
-                      previous: index > 0 ? byDay[index - 1] : null,
-                    });
-                  })),
-        }),
-        panel({
-          kicker: t("distribution"),
-          header: t("skillShare"),
-          subheader: t("skillShareDesc"),
-          children: h(
-            "div",
-            { className: "dbg-stack" },
-            metricCard({
-              label: t("share"),
-              value: loading ? "..." : fmtPct(topShare, locale),
-              hint: topSkills.length ? topSkills.slice(0, 3).map(function (row) { return row.skill; }).join(" · ") : "",
-              tone: "dbg-metric-tone-accent",
-            }),
-            h("div", { className: "dbg-insight-block" },
-              h("div", { className: "dbg-section-title" }, t("skillLead")),
-              h("div", { className: "dbg-note" }, t("skillLeadDesc")),
-              topToday
-                ? h("div", { className: "dbg-row dbg-day-row" },
-                    h("div", { className: "dbg-row-main" },
-                      h("div", { className: "dbg-row-title" }, topToday.skill),
-                      h("div", { className: "dbg-row-meta" }, today.date),
-                    ),
-                    h("div", { className: "dbg-row-cluster" },
-                      progressBar(today.total_count ? (safeNumber(topToday.total_count) / safeNumber(today.total_count)) * 100 : 0, "is-blue"),
-                      h("div", { className: "dbg-row-copy" },
-                        fmtCompact(topToday.view_count, locale), " ", t("skillLoads"),
-                        " · ", fmtCompact(topToday.manage_count, locale), " ", t("skillEdits"),
-                      ),
-                    ),
-                    h("div", { className: "dbg-row-aside" },
-                      h("div", { className: "dbg-token" }, fmtCompact(topToday.total_count, locale)),
-                      h("div", null, t("calls")),
-                    ),
-                  )
-                : h("div", { className: "dbg-empty" }, t("noSkillData")),
-            ),
-            h("div", { className: "dbg-insight-block" },
-              h("div", { className: "dbg-section-title" }, t("activity")),
-              h("div", { className: "dbg-note" }, prev ? fmtDelta(today && today.total_count, prev.total_count, locale) || "—" : "—"),
-              h("div", { className: "dbg-range-caption" },
-                prev ? today.date + " vs " + prev.date : (stats ? stats.date_from + " to " + stats.date_to : ""),
-              ),
-            ),
-          ),
-        }),
-      ),
       panel({
         kicker: t("distribution"),
         header: rankHeader,
@@ -2255,8 +2107,8 @@
     const tabs = [
       { id: "usage", label: t("usage") },
       { id: "skills", label: t("skills") },
-      { id: "requestBodies", label: t("requestBodies") },
       { id: "groupchat", label: t("groupchat") },
+      { id: "requestBodies", label: t("requestBodies") },
     ];
 
     return h(

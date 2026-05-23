@@ -16,6 +16,9 @@ from pathlib import Path
 from typing import Any, Iterable, Iterator, Optional
 
 from fastapi import APIRouter, HTTPException, Query
+from hermes_constants import reset_hermes_home_override, set_hermes_home_override
+from hermes_cli.profiles import resolve_profile_env
+from tools.skills_tool import _find_all_skills
 
 router = APIRouter()
 
@@ -577,24 +580,40 @@ def _format_local_day(timestamp: Optional[int]) -> Optional[str]:
         return None
 
 
-@lru_cache(maxsize=1)
-def _list_known_skills() -> list[str]:
-    roots = [
-        _hermes_home() / "skills",
-        _hermes_home() / "hermes-agent" / "skills",
-        _hermes_home() / "hermes-agent" / "optional-skills",
-    ]
+def _profile_home(profile_name: str) -> Path:
+    normalized = str(profile_name or "").strip().lower()
+    if normalized in ("", "default"):
+        return _hermes_home()
+    return Path(resolve_profile_env(normalized)).expanduser()
+
+
+@lru_cache(maxsize=16)
+def _list_enabled_skills_for_profile(profile_name: str) -> list[str]:
+    token = set_hermes_home_override(_profile_home(profile_name))
+    try:
+        skills = _find_all_skills()
+    finally:
+        reset_hermes_home_override(token)
+
     discovered: dict[str, str] = {}
-    for root in roots:
-        if not root.exists():
+    for skill in skills:
+        name = str(skill.get("name") or "").strip()
+        if not name:
             continue
-        for skill_file in root.rglob("SKILL.md"):
-            name = skill_file.parent.name.strip()
-            if not name:
-                continue
-            key = name.lower()
+        key = name.lower()
+        if key not in discovered:
+            discovered[key] = name
+    return sorted(discovered.values(), key=lambda item: item.lower())
+
+
+def _list_enabled_skills(profile_filter: Optional[str]) -> list[str]:
+    selected_profiles = _resolve_skill_profile_dbs(profile_filter)
+    discovered: dict[str, str] = {}
+    for profile_name in selected_profiles.keys():
+        for skill_name in _list_enabled_skills_for_profile(profile_name):
+            key = skill_name.lower()
             if key not in discovered:
-                discovered[key] = name
+                discovered[key] = skill_name
     return sorted(discovered.values(), key=lambda item: item.lower())
 
 
@@ -833,7 +852,7 @@ def _skill_usage_totals(days: int, profile_filter: Optional[str] = None) -> dict
         )
     )
 
-    known_skills = _list_known_skills()
+    enabled_skills = _list_enabled_skills(profile_filter)
     used_skill_keys = {str(skill_name).strip().lower() for skill_name in skill_map.keys()}
     unused_skills = [
         {
@@ -844,7 +863,7 @@ def _skill_usage_totals(days: int, profile_filter: Optional[str] = None) -> dict
             "percentage": 0.0,
             "last_used_at": None,
         }
-        for skill_name in known_skills
+        for skill_name in enabled_skills
         if skill_name.strip().lower() not in used_skill_keys
     ]
 
@@ -860,7 +879,7 @@ def _skill_usage_totals(days: int, profile_filter: Optional[str] = None) -> dict
             "total_skill_edits": total_edits,
             "total_skill_actions": total_actions,
             "distinct_skills_used": len(skill_map),
-            "distinct_skills_known": len(known_skills),
+            "distinct_skills_known": len(enabled_skills),
             "distinct_skills_unused": len(unused_skills),
         },
         "by_day": by_day,
