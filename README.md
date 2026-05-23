@@ -183,3 +183,7 @@ node --check plugins/hermes-web/dashboard/dist/index.js
 
 # FastAPI TestClient smoke test against /api/plugins/hermes-web/usage
 ```
+
+## thanks
+
+https://linux.do/
